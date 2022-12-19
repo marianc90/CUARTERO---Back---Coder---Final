@@ -1,4 +1,4 @@
-const fs = require('fs')
+import fs from 'fs';
 
 class ProductManager{
     constructor(path){
@@ -12,15 +12,17 @@ class ProductManager{
         return size > 0 ? this.products[size-1].id + 1 : 1 
     }   
 
-    #newProduct(id,title,description,price,thumbnail,code,stock){
+    #newProduct(id,title,description,price,code,stock, category, status, thumbnails){
         const newProduct={
             id: id,
             title,
             description,
             price,
-            thumbnail,
+            thumbnails,
             code,
-            stock
+            stock,
+            category,
+            status
         }
         return newProduct;
     }
@@ -38,15 +40,15 @@ class ProductManager{
         let index;
         let product = await this.getProductById(id)        
         if (product != "Product Id not found") index=this.products.indexOf(product) 
-        else return console.log(product); 
+        else return; 
         return index
     }
 
-    async addProduct(title,description,price,thumbnail,code,stock){
+    async addProduct(title,description,price,code,stock, category, status = true, thumbnails = []){
         await this.getProducts()
-        const newProduct= this.#newProduct(this.getNextId(),title,description,price,thumbnail,code,stock)
+        const newProduct= this.#newProduct(this.getNextId(),title,description,price,code,stock, category, status, thumbnails)
         const errors = this.#errorCheck(newProduct,"add")
-        errors.length == 0 ? (this.products.push(newProduct), await fs.promises.writeFile(this.path, JSON.stringify(this.products))) : errors.forEach(error=> console.error(error))
+        return errors.length == 0 ? (this.products.push(newProduct), await fs.promises.writeFile(this.path, JSON.stringify(this.products)),newProduct) : {error: errors}
         
     }
 
@@ -68,19 +70,23 @@ class ProductManager{
         
     }
     
-    updateProductById = async (id,title,description,price,thumbnail,code,stock) => {
+    updateProductById = async (id,title,description,price,code,stock, category, status = true, thumbnails = []) => {
         const index = await this.#getIndex(id)
-        const updatedProduct= this.#newProduct(id,title,description,price,thumbnail,code,stock)
+        const updatedProduct= this.#newProduct(id,title,description,price,code,stock, category, status, thumbnails)
         const errors = this.#errorCheck(updatedProduct, "update")
-        errors.length == 0 ? (this.products[index]=updatedProduct, await fs.promises.writeFile(this.path, JSON.stringify(this.products))) : errors.forEach(error=> console.error(error))
+        if (!index) errors.push("Product Id not found")
+        return errors.length == 0 ? (this.products[index]=updatedProduct, await fs.promises.writeFile(this.path, JSON.stringify(this.products)),updatedProduct) : errors
         
     }
 
     deleteProductById = async (id) => {
         const index = await this.#getIndex(id)
-        if (index) (this.products.splice(index, 1), await fs.promises.writeFile(this.path, JSON.stringify(this.products)))
+        if (index) return (this.products.splice(index, 1), await fs.promises.writeFile(this.path, JSON.stringify(this.products)),{message: "Success"})
+        else return {error: "Product Id not found"}
         
     }
 }
 
-module.exports = ProductManager;
+//module.exports = ProductManager;
+
+export default ProductManager;
