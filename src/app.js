@@ -47,14 +47,12 @@ mongoose.connect(uri,{dbName: 'ecommerce'}, async (error)=>{
 
             socket.on('session', async data =>{// Esto es para que aparezcan los mensajes sin escribir nada antes, y despues de poner el usuario
                 messages = await messagesModel.find(/* {$or:[{user:data }, {user:'At. al Cliente'}]} */).lean().exec();
-                console.log(messages);
                 socketServer.emit('first',messages)
             })
             
 
             socket.on('message', async data=>{
                 await messagesModel.create(data)
-                console.log(data);
                 messages = await messagesModel.find(/* {$or:[{user:data.user }, {user:'At. al Cliente'}]} */).lean().exec();
                 socketServer.emit('logs',messages)
                 })
