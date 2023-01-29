@@ -8,17 +8,14 @@ const manager = new ProductManager();
 
 
 router.get('/products', async (req, res) => {
-    const products = await manager.getProducts()
     let limit = req.query.limit
-    if (!limit) res.send({products})
-    else {
-        const prodLimit = [];
-        if (limit > products.length) limit = products.length;
-        for (let index = 0; index < limit; index++) {
-            prodLimit.push(products[index]);
-        }
-        res.send({prodLimit})
-    }
+    let page = req.query.page
+    let query = req.query.query
+    let sort = req.query.sort
+ 
+    const products = await manager.getProducts(limit, page, sort, query)
+    res.send(products)
+    
     req.io.emit('updatedProducts', products);
 
 })
@@ -26,7 +23,7 @@ router.get('/products', async (req, res) => {
 router.get('/products/:pid', async (req, res) => {
     const id = req.params.pid
     const product = await manager.getProductById(id)
-    res.send({product})
+    res.send(product)
 })
 
 router.post('/', async (req, res) => {
