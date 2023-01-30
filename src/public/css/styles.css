@@ -22,3 +22,9 @@
     color: black;
     overflow-y: scroll;
 }
+
+.cont-gral{
+    display: flex;
+    gap: 20px;
+    margin: 20px;
+}

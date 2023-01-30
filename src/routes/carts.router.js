@@ -8,18 +8,18 @@ const manager = new CartManager();
 
 router.post('/', async (req, res) => {
     const newCart = await manager.addCart()
-    res.send({newCart})
+    res.send(newCart)
 })
 
 router.get('/:cid', async (req, res) => {
     const cartId = req.params.cid
     const selCart = await manager.getCartById(cartId)
-    res.send({selCart})
+    res.render('cart-detail', selCart)
 })
 
 router.get('/', async (req, res) => {
     const carts = await manager.getCarts()
-    res.send({carts})
+    res.send(carts)
 })
 
 router.post('/:cid/products/:pid', async (req, res) => {

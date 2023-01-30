@@ -14,7 +14,7 @@ router.get('/products', async (req, res) => {
     let sort = req.query.sort
  
     const products = await manager.getProducts(limit, page, sort, query)
-    res.send(products)
+    res.render('product-pages',products)
     
     req.io.emit('updatedProducts', products);
 
@@ -23,7 +23,7 @@ router.get('/products', async (req, res) => {
 router.get('/products/:pid', async (req, res) => {
     const id = req.params.pid
     const product = await manager.getProductById(id)
-    res.send(product)
+    res.render('product-detail',product)
 })
 
 router.post('/', async (req, res) => {
@@ -54,7 +54,7 @@ router.get('/home', async (req, res) =>{
     res.render('home',
     {
         title: "Lista de Productos",
-        products: products
+        products: products.payload
     })
 })
 
@@ -63,7 +63,7 @@ router.get('/realtimeproducts', async (req, res) =>{
     res.render('realTimeProducts',
     {
         title: "Lista de Productos",
-        products: products
+        products: products.payload
     })
 
 })
