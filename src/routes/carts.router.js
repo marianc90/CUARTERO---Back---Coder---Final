@@ -12,9 +12,14 @@ router.post('/', async (req, res) => {
 })
 
 router.get('/:cid', async (req, res) => {
-    const cartId = req.params.cid
-    const selCart = await manager.getCartById(cartId)
-    res.render('cart-detail', selCart)
+    try {
+        const cartId = req.params.cid
+        const selCart = await manager.getCartById(cartId)
+        res.render('cart-detail', selCart)
+    } catch (error) {
+        res.status(401).render('cart-detail', {status: 'error', error: 'Not found'})
+    }
+
 })
 
 router.get('/', async (req, res) => {
@@ -41,7 +46,7 @@ router.delete('/:cid', async (req, res) =>{
         const cleanedCart = await manager.cleanedCart(cartId)
         res.send({status: 'success', cleaned: cleanedCart})
     } catch (error) {
-        res.status(401).send({status: 'error', message: 'Not found'})
+        res.status(401).send({status: 'error', error: 'Not found'})
         
     }
 })
@@ -53,7 +58,7 @@ router.delete('/:cid/products/:pid', async (req, res) =>{
         const deletedProduct = await manager.deleteProduct(cartId, prodId)
         res.send({status: 'success', deleted: deletedProduct})
     } catch (error) {
-        res.status(401).send({status: 'error', message: 'Not found'})
+        res.status(401).send({status: 'error', error: 'Not found'})
         
     }
 })
@@ -65,7 +70,7 @@ router.put('/:cid', async (req, res) => {
         const updatedCart = await manager.replaceCart(cartId,products)
         res.send({status: 'success', replaced: updatedCart})
     } catch (error) {
-        res.status(401).send({status: 'error', message: 'Not found'})
+        res.status(401).send({status: 'error', error: 'Not found'})
         
     }
 })
@@ -78,7 +83,7 @@ router.put('/:cid/products/:pid', async (req, res) => {
         const replacedQuantity = await manager.replaceProdQuantity(cartId, prodId, quantity)
         res.send({status: 'success', replacedQuantity: replacedQuantity})
     } catch (error) {
-        res.status(401).send({status: 'error', message: 'Not found'})
+        res.status(401).send({status: 'error', error: 'Not found'})
         
     }
     

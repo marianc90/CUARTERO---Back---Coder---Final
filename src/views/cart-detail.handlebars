@@ -1,4 +1,8 @@
 <h1 class="display-5 text-center">Carrito</h1>
+{{#if error}}
+<h3 class="text-center">{{error}}</h3>
+<h6>Try Another Cart</h6>
+{{else}}
 <h3 class="text-center">Número: {{_id}}</h3>
 <br>
 <a class="btn btn-danger" href="#" onClick="history.go(-1)">Volver</a>
@@ -23,6 +27,7 @@
     {{/each}}  
     
 </table>
+{{/if}}
 
 
 
