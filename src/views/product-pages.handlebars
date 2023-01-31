@@ -8,18 +8,20 @@
         <td><strong>Código</strong></td>
         <td><strong>Stock</strong></td>
         <td><strong>Categoría</strong></td>
+        <td></td>
     </tr>
     
     {{#each payload}}
         <tr>
            
        
-            <td> <a href="products/{{this._id}}">{{this.title}}</a></td>
+            <td align="center"> <a href="products/{{this._id}}"><img class="rounded" src="{{thumbnails.[0]}}" alt="img_product" width="100"> <br>{{this.title}}</a></td>
             <td>{{this.description}}</td>
             <td>{{this.price}}</td>
             <td>{{this.code}}</td>
             <td>{{this.stock}}</td>
             <td>{{this.category}}</td>
+            <td><a class="btn btn-success" href="">Agregar al carrito</a></td>
         
             
         </tr>
