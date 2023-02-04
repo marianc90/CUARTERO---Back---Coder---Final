@@ -14,7 +14,7 @@ router.get('/products', async (req, res) => {
     let sort = req.query.sort
  
     const products = await manager.getProducts(limit, page, sort, query)
-    res.render('product-pages',products)
+    res.send(products)
     
     req.io.emit('updatedProducts', products);
 
@@ -23,7 +23,7 @@ router.get('/products', async (req, res) => {
 router.get('/products/:pid', async (req, res) => {
     const id = req.params.pid
     const product = await manager.getProductById(id)
-    res.render('product-detail',product)
+    res.send(product)
 })
 
 router.post('/', async (req, res) => {
@@ -47,25 +47,6 @@ router.delete('/:pid', async (req, res) => {
     const deleteProduct =  await manager.deleteProductById(id)
     req.io.emit('updatedProducts', await manager.getProducts());
     res.send(deleteProduct)
-})
-
-router.get('/home', async (req, res) =>{
-    const products = await manager.getProducts()
-    res.render('home',
-    {
-        title: "Lista de Productos",
-        products: products.payload
-    })
-})
-
-router.get('/realtimeproducts', async (req, res) =>{
-    const products = await manager.getProducts()
-    res.render('realTimeProducts',
-    {
-        title: "Lista de Productos",
-        products: products.payload
-    })
-
 })
 
 export default router;

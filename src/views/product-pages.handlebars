@@ -11,26 +11,28 @@
         <td></td>
     </tr>
     
-    {{#each payload}}
+    {{#each products.payload}}
         <tr>
            
        
-            <td align="center"> <a href="products/{{this._id}}"><img class="rounded" src="{{thumbnails.[0]}}" alt="img_product" width="100"> <br>{{this.title}}</a></td>
+            <td align="center"> <a href="/views/products/{{this._id}}"><img class="rounded" src="{{thumbnails.[0]}}" alt="img_product" width="100"> <br>{{this.title}}</a></td>
             <td>{{this.description}}</td>
             <td>{{this.price}}</td>
             <td>{{this.code}}</td>
             <td>{{this.stock}}</td>
             <td>{{this.category}}</td>
-            <td><a class="btn btn-success" href="">Agregar al carrito</a></td>
+            <td><button class="btn btn-success" type="button" name="addToCart" id="{{this._id}}">Agregar al carrito</button></td>
         
             
         </tr>
     {{/each}}  
     
 </table>
-{{#if hasPrevPage}}
-    <a class="btn btn-danger" href="{{prevLink}}">Página Anterior</a>
+{{#if products.hasPrevPage}}
+    <a class="btn btn-danger" href="{{products.prevLink}}">Página Anterior</a>
 {{/if}}
-{{#if hasNextPage}}
-    <a class="btn btn-success" href="{{nextLink}}">Página Siguiente</a>
+{{#if products.hasNextPage}}
+    <a class="btn btn-success" href="{{products.nextLink}}">Página Siguiente</a>
 {{/if}}
+
+<script src="/js/product-buttons.js"></script>

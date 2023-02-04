@@ -15,9 +15,9 @@ router.get('/:cid', async (req, res) => {
     try {
         const cartId = req.params.cid
         const selCart = await manager.getCartById(cartId)
-        res.render('cart-detail', selCart)
+        res.send(selCart)
     } catch (error) {
-        res.status(401).render('cart-detail', {status: 'error', error: 'Not found'})
+        res.status(401).send({status: 'error', error: 'Not found'})
     }
 
 })

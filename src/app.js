@@ -1,19 +1,22 @@
 import express from 'express';
 import handlebars from 'express-handlebars';
 import { Server } from 'socket.io';
+
 import mongoose from 'mongoose';
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
+
 import __dirname from './utils.js';
 
 import productsRouter from './routes/products.router.js';
 import cartsRouter from './routes/carts.router.js';
 import chatRouter from './routes/chat.router.js';
+import sessionRouter from './routes/session.router.js';
+import viewsRouter from './routes/views.router.js';
 
 import messagesModel from './dao/models/messages.model.js';
 
-
 const app = express();
-
-
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -23,10 +26,11 @@ app.engine('handlebars', handlebars.engine())
 app.set('views', __dirname + '/views');
 app.set('view engine', 'handlebars')
 
-const uri = 'mongodb+srv://marianc90:sitela90@cluster90.qnx1iph.mongodb.net/?retryWrites=true&w=majority'
+const MONGO_URI = 'mongodb+srv://marianc90:sitela90@cluster90.qnx1iph.mongodb.net/?retryWrites=true&w=majority'
+const MONGO_DB_NAME = 'ecommerce'
 
 mongoose.set({strictQuery: true})
-mongoose.connect(uri,{dbName: 'ecommerce'}, async (error)=>{
+mongoose.connect(MONGO_URI,{dbName: MONGO_DB_NAME}, async (error)=>{
     if (!error){
         console.log('DB connected');
         const httpServer = app.listen(8080, ()=>{
@@ -57,6 +61,16 @@ mongoose.connect(uri,{dbName: 'ecommerce'}, async (error)=>{
                 socketServer.emit('logs',messages)
                 })
         })
+        //Seteamos el session express y su configuracion
+        app.use(session({
+            store: MongoStore.create({
+                mongoUrl: MONGO_URI,
+                dbName: MONGO_DB_NAME
+            }),
+            secret: 'the_secret',
+            resave: true,
+            saveUninitialized: true
+        }))
 
         //Utilizamos este Middleware genérico para enviar la instancia del servidor de Socket.io a las routes
         app.use((req,res,next)=>{
@@ -66,6 +80,16 @@ mongoose.connect(uri,{dbName: 'ecommerce'}, async (error)=>{
         app.use('/api/products', productsRouter)
         app.use('/api/carts', cartsRouter)
         app.use('/api/chat', chatRouter)
+        app.use('/session', sessionRouter)
+        app.use('/views', viewsRouter)
+        
+        app.get('/',(req, res) =>{
+            if(!req.session?.user){
+                res.redirect('views/login')}
+            else{
+                res.redirect('views/products')
+            }
+        })
 
     } else {
         console.log("Can't connect to database");

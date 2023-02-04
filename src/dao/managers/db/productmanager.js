@@ -8,8 +8,8 @@ class ProductManager{
             let querySearch = query ? (query=='disponible' ? {stock:{$gt:0}} : {category:{$regex:query, $options:'i'}}) : {};
             let sortChoosen = sort ? (sort=='asc'?{price:1}:(sort=='desc'?{price:-1}:{})) : {};
             let content=await productsModel.paginate(querySearch,{limit: limit || 10, page: page || 1, sort:sortChoosen, lean : true});
-            const prevLink = content.hasPrevPage ? (`products?${'page='+content.prevPage}${limit&&'&limit='+limit}${sort&&'&sort='+sort}${query&&'&query='+query}`) : null;
-            const nextLink = content.hasNextPage ? (`products?${'page='+content.nextPage}${limit&&'&limit='+limit}${sort&&'&sort='+sort}${query&&'&query='+query}`) : null;
+            const prevLink = content.hasPrevPage ? (`/views/products?${'page='+content.prevPage}${limit&&'&limit='+limit}${sort&&'&sort='+sort}${query&&'&query='+query}`) : null;
+            const nextLink = content.hasNextPage ? (`/views/products?${'page='+content.nextPage}${limit&&'&limit='+limit}${sort&&'&sort='+sort}${query&&'&query='+query}`) : null;
             return {
                 status:'success', 
                 payload: content.docs, 
@@ -31,18 +31,18 @@ class ProductManager{
     
     async addProduct(title,description,price,code,stock, category, status = true, thumbnails = []){
         const newProduct= this.#newProduct(title,description,price,code,stock, category, status, thumbnails)
-        console.log(newProduct);
         const errors = await this.#errorCheck(newProduct,"add")
-        console.log(errors);
         return errors.length == 0 ? (await productsModel.create(newProduct),newProduct) : {error: errors}
         
     }
 
     getProductById = async (id) => {
-            if (id.length == 24){
-              return await productsModel.findOne({_id:id}) || "Product Id not found";  
-            } else {
-                return 'ID must be 24 characters'
+        try {
+                const product = await productsModel.findOne({_id:id}).lean().exec();
+                if (product) return product
+                else return {error: "Product ID not found"}
+        } catch (error) {
+                return {error: 'Incorrect Id'}
             }
         }    
         
