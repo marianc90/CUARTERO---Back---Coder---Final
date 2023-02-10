@@ -5,6 +5,8 @@ import { Server } from 'socket.io';
 import mongoose from 'mongoose';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
+import passport from 'passport';
+import initializePassport from './config/passport.config.js'
 
 import __dirname from './utils.js';
 
@@ -71,6 +73,11 @@ mongoose.connect(MONGO_URI,{dbName: MONGO_DB_NAME}, async (error)=>{
             resave: true,
             saveUninitialized: true
         }))
+
+        //Inicializamos passport
+        initializePassport();
+        app.use(passport.initialize());
+        app.use(passport.session());
 
         //Utilizamos este Middleware genérico para enviar la instancia del servidor de Socket.io a las routes
         app.use((req,res,next)=>{
