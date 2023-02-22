@@ -1,6 +1,7 @@
 import passport from "passport";
 import local from 'passport-local';
 import GitHubStrategy from 'passport-github2';
+import fetch from 'node-fetch';
 
 import usersModel from "../dao/models/users.models.js";
 import { createHash, isValidPassword } from "../encrypt.js";
@@ -14,25 +15,27 @@ const initializePassport= () => {
         usernameField: 'email',
     }, async (req, username, password, done)=>{
         
-        const {first_name, last_name, email} = req.body;
+        const {first_name, last_name, email, age} = req.body;
 
-        try {
+        
             const user = await usersModel.findOne({email: username}).lean().exec();
             if (user){
-                return done({passportError:'Usuario ya existente en la base de datos'}, false)
+                return done('Usuario ya existente en la base de datos', false)
             }
+       
             const newUser = await usersModel.create({
                 first_name: first_name,
                 last_name: last_name,
                 email: email,
-                password: createHash(password)
+                password: createHash(password),
+                age: age,
+                cart: await fetch('http://127.0.0.1:8080/api/carts', {method:'POST'}).then(res=>res.json()).then(data=> data._id)
+
             })
 
             return done(null, newUser)
 
-        } catch (error) {
-            return done({catchErrorPassport:'Error al obtener usuarios', error})
-        }
+      
     }));
 
     passport.use('login', new LocalStrategy({
@@ -73,7 +76,9 @@ const initializePassport= () => {
                 first_name:profile._json.name,
                 last_name:'',
                 email: profile.emails[0].value,
-                password: ''
+                password: '',
+                age:'',
+                cart: await fetch('http://127.0.0.1:8080/api/carts', {method:'POST'}).then(res=>res.json()).then(data=> data._id)
             })
             return done(null, newUser)
         } catch (error) {

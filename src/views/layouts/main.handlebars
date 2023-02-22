@@ -12,7 +12,7 @@
     <div class="container">
     {{#if user}}
     <h5>Bienvenido {{user.first_name}} {{user.last_name}} - <i> {{user.role}}</i> <a href="/session/logout">Logout</a></h5>
-    <h5><a href="/views/carts/63ceae26991165afcfd1cb36">Carrito</a></h5>
+    <h5><button id="user_cart" cartid="{{user.cart}}"> <a href="/views/carts/{{user.cart}}">Carrito</a></button></h5>
     {{/if}}
     <h1 class="display-2 text-center">Bienvenido a tu e-commerce</h1>
     {{{body}}}

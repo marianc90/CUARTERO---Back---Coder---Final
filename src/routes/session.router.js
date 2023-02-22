@@ -17,7 +17,9 @@ router.post('/login', passport.authenticate('login', {failureRedirect:'/views/fa
         first_name: req.user.first_name,
         last_name: req.user.last_name,
         role: req.user.role,
-        email: req.user.email
+        email: req.user.email,
+        age: req.user.age,
+        cart: req.user.cart
     }
     return res.redirect('/views/products')
 })

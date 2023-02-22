@@ -12,6 +12,7 @@
     <tr>
         <td><strong>Producto</strong></td>
         <td><strong>Cantidad</strong></td>
+        <td><strong>Eliminar</strong></td>
 
     </tr>
     
@@ -21,6 +22,8 @@
        
             <td> <a href="/api/products/products/{{this.product._id}}">{{this.product.title}} {{this.product.description}}</a></td>
             <td>{{this.quantity}}</td>
+            <td><button class="btn btn-danger" type="button" name="removeFromCart" id="{{product._id}}">Eliminar</button></td>     
+
         
             
         </tr>
@@ -28,6 +31,7 @@
     
 </table>
 {{/if}}
+<script src="/js/product-buttons.js"></script>
 
 
 
