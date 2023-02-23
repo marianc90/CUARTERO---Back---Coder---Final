@@ -6,7 +6,9 @@ import mongoose from 'mongoose';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import passport from 'passport';
+import cookieParser from 'cookie-parser';
 import initializePassport from './config/passport.config.js'
+
 
 import __dirname from './utils.js';
 
@@ -27,6 +29,9 @@ app.use(express.static(__dirname + '/public/'))
 app.engine('handlebars', handlebars.engine())
 app.set('views', __dirname + '/views');
 app.set('view engine', 'handlebars')
+
+app.use(express.static(__dirname+'/public'))
+app.use(cookieParser('mySecret'));
 
 const MONGO_URI = 'mongodb+srv://marianc90:sitela90@cluster90.qnx1iph.mongodb.net/?retryWrites=true&w=majority'
 const MONGO_DB_NAME = 'ecommerce'
@@ -63,7 +68,7 @@ mongoose.connect(MONGO_URI,{dbName: MONGO_DB_NAME}, async (error)=>{
                 socketServer.emit('logs',messages)
                 })
         })
-        //Seteamos el session express y su configuracion
+/*         //Seteamos el session express y su configuracion
         app.use(session({
             store: MongoStore.create({
                 mongoUrl: MONGO_URI,
@@ -72,12 +77,12 @@ mongoose.connect(MONGO_URI,{dbName: MONGO_DB_NAME}, async (error)=>{
             secret: 'the_secret',
             resave: true,
             saveUninitialized: true
-        }))
+        })) */
 
         //Inicializamos passport
         initializePassport();
         app.use(passport.initialize());
-        app.use(passport.session());
+/*         app.use(passport.session()); */
 
         //Utilizamos este Middleware genérico para enviar la instancia del servidor de Socket.io a las routes
         app.use((req,res,next)=>{
@@ -90,13 +95,10 @@ mongoose.connect(MONGO_URI,{dbName: MONGO_DB_NAME}, async (error)=>{
         app.use('/session', sessionRouter)
         app.use('/views', viewsRouter)
         
-        app.get('/',(req, res) =>{
-            if(!req.session?.user){
-                res.redirect('views/login')}
-            else{
+        app.get('/', passport.authenticate('current', {session:false, failureRedirect:'views/login'}), (req, res) =>{
                 res.redirect('views/products')
             }
-        })
+        )
 
     } else {
         console.log("Can't connect to database");
