@@ -6,7 +6,7 @@ import fetch from 'node-fetch';
 
 import usersModel from "../dao/models/users.models.js";
 import { createHash, isValidPassword } from "../encrypt.js";
-import { PRIVATE_KEY } from "../jwt_utils.js";
+import { generateToken, PRIVATE_KEY } from "../jwt_utils.js";
 
 const JWTStrategy = jwt.Strategy
 const ExtractJWT = jwt.ExtractJwt
@@ -77,6 +77,9 @@ const initializePassport= () => {
                 return done(null, false)
             }
 
+            const token = generateToken(user)
+            user.token = token
+
             return done(null, user)
 
         } catch (error) {
@@ -93,7 +96,11 @@ const initializePassport= () => {
         console.log(profile);
         try {
             const user = await usersModel.findOne({email:profile.emails[0].value})
-            if (user) return done(null, user);
+            if (user) {
+                const token = generateToken(user)
+                user.token = token
+                return done(null, user);
+            }
 
             const newUser = await usersModel.create({
                 first_name:profile._json.name,
@@ -103,6 +110,8 @@ const initializePassport= () => {
                 age:'',
                 cart: await fetch('http://127.0.0.1:8080/api/carts', {method:'POST'}).then(res=>res.json()).then(data=> data._id)
             })
+            const token = generateToken(newUser)
+            newUser.token = token
             return done(null, newUser)
         } catch (error) {
             return done('Error to login with GitHub: ',error)
