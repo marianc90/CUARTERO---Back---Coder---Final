@@ -1,23 +1,19 @@
 import {Router} from 'express'
 import passport from "passport"
+import ProductManager from '../managers/product.manager.js';
+import CartManager from '../managers/cart.manager.js';
+import { authToken } from '../jwt_utils.js';
 
 const router = Router()
-
-import ProductManager from '../dao/managers/db/productmanager.js';
-import CartManager from '../dao/managers/db/cartmanager.js';
-import { authToken } from '../jwt_utils.js';
 const productManager = new ProductManager();
 const cartManager = new CartManager();
 
+
 router.get('/products', authToken/* SOLO PARA OBTENER INFO */, async (req, res) => {
-    let limit = req.query.limit
-    let page = req.query.page
-    let query = req.query.query
-    let sort = req.query.sort
- 
+    let {limit, page, query, sort} = req.query
     const products = await productManager.getProducts(limit, page, sort, query)
-    res.render('product-pages',{products, user: req.user})
     req.io.emit('updatedProducts', products);
+    res.render('product-pages',{products, user: req.user})
 
 })
 router.get('/products/:pid',  passport.authenticate('current', {session:false, failureRedirect:'/views/login'}), async (req, res) => {

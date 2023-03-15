@@ -1,9 +1,7 @@
 import {Router} from 'express'
+import CartManager from '../managers/cart.manager.js';
 
 const router = Router()
-
-
-import CartManager from '../dao/managers/db/cartmanager.js';
 const manager = new CartManager();
 
 router.post('/', async (req, res) => {
@@ -19,7 +17,6 @@ router.get('/:cid', async (req, res) => {
     } catch (error) {
         res.status(401).send({status: 'error', error: 'Not found'})
     }
-
 })
 
 router.get('/', async (req, res) => {
