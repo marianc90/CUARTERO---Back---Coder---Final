@@ -1,8 +1,17 @@
 import dotenv from 'dotenv';
+import { Command } from "commander";
+
+const program = new Command()
+
+program
+    .option('-d <dao>', 'DAO Mode', 'MONGO')
+
+program.parse()
 
 dotenv.config();
 
 export default {
+    DAO_MODE: program.opts().d,
     MONGO_URI: process.env.MONGO_URI,
     MONGO_DB_NAME: process.env.MONGO_DB_NAME,
     PORT: process.env.PORT,

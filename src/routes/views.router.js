@@ -1,72 +1,29 @@
 import {Router} from 'express'
 import passport from "passport"
-import ProductManager from '../managers/product.manager.js';
-import CartManager from '../managers/cart.manager.js';
-import { authToken } from '../jwt_utils.js';
+import { cartDetail, failLoginView, failRegisterView, getProductByIdView, getProductsView, homeView, loginView, realtimeProductsView, registerView } from '../controllers/views.controller.js';
+import { passportCall, authorization} from "../passport_custom.js";
+
 
 const router = Router()
-const productManager = new ProductManager();
-const cartManager = new CartManager();
 
 
-router.get('/products', authToken/* SOLO PARA OBTENER INFO */, async (req, res) => {
-    let {limit, page, query, sort} = req.query
-    const products = await productManager.getProducts(limit, page, sort, query)
-    req.io.emit('updatedProducts', products);
-    res.render('product-pages',{products, user: req.user})
 
-})
-router.get('/products/:pid',  passport.authenticate('current', {session:false, failureRedirect:'/views/login'}), async (req, res) => {
-    const id = req.params.pid
-    const product = await productManager.getProductById(id)
-    if (!product?.error) res.render('product-detail',{product, user: req.user.user})
-    else res.status(404).send(product.error)
-})
+router.get('/products', passportCall('current', {session:false, failureRedirect:'/views/login'}),authorization(['PUBLIC']), getProductsView)
 
-router.get('/home',  passport.authenticate('current', {session:false, failureRedirect:'/views/login'}), async (req, res) =>{
-    const products = await productManager.getProducts()
-    res.render('home',
-    {
-        title: "Lista de Productos",
-        products: products.payload,
-        user: req.user.user
-    })
-})
-router.get('/realtimeproducts',  passport.authenticate('current', {session:false, failureRedirect:'/views/login'}), async (req, res) =>{
-    const products = await productManager.getProducts()
-    res.render('realTimeProducts',
-    {
-        title: "Lista de Productos",
-        products: products.payload,
-        user: req.user.user
-    })
+router.get('/products/:pid',  passportCall('current', {session:false, failureRedirect:'/views/login'}),authorization(['PUBLIC']), getProductByIdView)
 
-})
+router.get('/home',  passportCall('current', {session:false, failureRedirect:'/views/login'}),authorization(['PUBLIC']), homeView)
 
-router.get('/carts/:cid',  passport.authenticate('current', {session:false, failureRedirect:'/views/login'}),  async (req, res) => {
-    try {
-        const cartId = req.params.cid
-        const selCart = await cartManager.getCartById(cartId)
-        res.render('cart-detail', {selCart, user: req.user.user})
-    } catch (error) {
-        res.status(401).render('cart-detail', {status: 'error', error: 'Not found'})
-    }
+router.get('/realtimeproducts',  passportCall('current', {session:false, failureRedirect:'/views/login'}),authorization(['PUBLIC']), realtimeProductsView)
 
-})
+router.get('/carts/:cid',  passportCall('current', {session:false, failureRedirect:'/views/login'}),authorization(['USER', 'ADMIN']),  cartDetail)
 
-router.get('/login',(req, res)=>{
-    res.render('session-views/login')
-})
+router.get('/login', loginView)
 
-router.get('/register',(req, res)=>{
-    res.render('session-views/register')
-})
+router.get('/register', registerView)
 
-router.get('/failregister', (req,res)=>{
-    res.render('session-views/register',{error:'Error al registrarse'})
-})
-router.get('/faillogin', (req,res)=>{
-    res.render('session-views/login',{error:'Error al loguearse'})
-})
+router.get('/failregister', failRegisterView)
+
+router.get('/faillogin', failLoginView)
 
 export default router;

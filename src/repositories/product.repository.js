@@ -1,10 +1,9 @@
-import ProductMongo from "../dao/db/product.mongo.js";
-import ProductFs from "../dao/fs/productmanager.js"
+import ProductDTO from '../dao/DTO/products.dto.js';
 
-class ProductManager{
+class ProductRepository{
 
-    constructor(){
-        this.dao = new ProductMongo()
+    constructor(dao){
+        this.dao = dao;
     }
 
     getProducts = async (limit = '', page = '', sort = '', query = '') => {
@@ -35,8 +34,9 @@ class ProductManager{
     
     async addProduct(title,description,price,code,stock, category, status = true, thumbnails = []){
         const newProduct= this.#newProduct(title,description,price,code,stock, category, status, thumbnails)
-        const errors = await this.#errorCheck(newProduct,"add")
-        return errors.length == 0 ? (await this.dao.create(newProduct),newProduct) : {error: errors}
+        const productToInsert = new ProductDTO(newProduct)
+        const errors = await this.#errorCheck(productToInsert,"add", false)
+        return errors.length == 0 ? (await this.dao.create(productToInsert),productToInsert) : {error: errors}
         
     }
 
@@ -51,12 +51,13 @@ class ProductManager{
             }
         }    
         
-    updateProductById = async (id,title,description,price,code,stock, category, status = true, thumbnails = []) => {
-        if (id.length != 24) return {error: "ID must be 24 characters"} 
-        const updatedProduct= this.#newProduct(title,description,price,code,stock, category, status, thumbnails)
-        const errors = await this.#errorCheck(updatedProduct, "update")
+    updateProductById = async (id, product) => {
+        if (typeof(id) != 'object' && id.length != 24) return (console.log("ID must be 24 characters"),{error: "ID must be 24 characters"}) 
+        const errors = await this.#errorCheck(product, "update", id)
         if (!await this.dao.getOne(id)) errors.push("Product Id not found")
-        return errors.length == 0 ? (await this.dao.update(id,updatedProduct),updatedProduct) : errors
+        const updatedProduct = await this.dao.update(id,product)
+        const newProduct = await this.getProductById(id)
+        return errors.length == 0 ? (updatedProduct, newProduct) : errors
         
     }   
     
@@ -85,12 +86,13 @@ class ProductManager{
         return newProduct;
     }
 
-    async #errorCheck(newProduct, operation){
+    async #errorCheck(newProduct, operation, id){
         const errors=new Array();
         if (operation == "add") {
             if(await this.dao.getOther({code:newProduct.code}) ) errors.push(`Code "${newProduct.code}" already exists`)
         }
         if (Object.values(newProduct).includes(undefined)) errors.push('There are empty fields.')
+        if (newProduct.code) if (await this.dao.getOther({code:newProduct.code, _id: {$ne: id}}) ) errors.push(`Code "${newProduct.code}" already exists`)
         return errors
     }
 
@@ -98,4 +100,4 @@ class ProductManager{
 
 //module.exports = ProductManager;
 
-export default ProductManager;
+export default ProductRepository;

@@ -17,7 +17,7 @@ import chatRouter from './routes/chat.router.js';
 import sessionRouter from './routes/session.router.js';
 import viewsRouter from './routes/views.router.js';
 
-import messagesModel from './dao/db/models/messages.model.js';
+import { MessageService } from './repositories/index.js';
 
 import config from './config/config.js';
 
@@ -47,20 +47,20 @@ mongoose.connect(config.MONGO_URI,{dbName: config.MONGO_DB_NAME}, async (error)=
 
         socketServer.on('connection', socket =>{
             console.log(socket.id);
-            socket.on('msg_front', data => console.log(data));
+            socket.on('msg_front', data => console.log(data)); 
             socket.emit('msg_back',"Conectado al servicio, Bienvenido desde el Back")
             /* socket.emit('msg_individual', 'Este msj solo lo recibe el socket')
             socket.broadcast.emit('msg_resto','Este msj lo recibe todos menos el socket actual')
             socketServer.emit('msg_all','Mensaje a todos') */
 
             socket.on('session', async data =>{// Esto es para que aparezcan los mensajes sin escribir nada antes, y despues de poner el usuario
-                messages = await messagesModel.find(/* {$or:[{user:data }, {user:'At. al Cliente'}]} */).lean().exec();
+                messages = await MessageService.get();
                 socketServer.emit('first',messages)
             })
 
             socket.on('message', async data=>{
-                await messagesModel.create(data)
-                messages = await messagesModel.find(/* {$or:[{user:data.user }, {user:'At. al Cliente'}]} */).lean().exec();
+                await MessageService.create(data)
+                messages = await MessageService.get();
                 socketServer.emit('logs',messages)
                 })
         })
@@ -91,7 +91,7 @@ mongoose.connect(config.MONGO_URI,{dbName: config.MONGO_DB_NAME}, async (error)=
         app.use('/session', sessionRouter)
         app.use('/views', viewsRouter)
         
-        app.get('/', passport.authenticate('current', {session:false, failureRedirect:'views/login'}), (req, res) =>{
+        app.get('/', (req, res) =>{
                 res.redirect('views/products')
             }
         )

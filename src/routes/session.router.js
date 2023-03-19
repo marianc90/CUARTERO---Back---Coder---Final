@@ -1,33 +1,19 @@
 import {Router} from 'express'
 import passport from 'passport';
-import config from '../config/config.js';
+import { current, empty, githubcallback, login, logout, register } from '../controllers/session.controller.js';
 
 const router = Router()
 
-router.post('/register', passport.authenticate('register', {failureRedirect:'/views/failregister'}), async (req, res) =>{
-    res.redirect('/views/login')
-})
+router.post('/register', passport.authenticate('register', {session:false, failureRedirect:'/views/failregister'}), register)
 
-router.post('/login', passport.authenticate('login', {session:false, failureRedirect:'/views/faillogin'}), async (req, res) =>{
-    if (!req.user){
-        return res.status(401).render('session-views/login',{error: 'User not found or Incorrect password'})
-    }
-    return res.cookie(config.COOKIE_NAME, req.user.token).redirect('/views/products')
-})
+router.post('/login', passport.authenticate('login', {session:false, failureRedirect:'/views/faillogin'}), login)
 
-router.get('/login-github', passport.authenticate('github'), async (req, res) =>{
-})
+router.get('/login-github', passport.authenticate('github'), empty)
 
-router.get('/githubcallback', passport.authenticate('github', {session:false, failureRedirect:'/views/faillogin'}), async (req, res,)=>{
-    return res.cookie(config.COOKIE_NAME, req.user.token).redirect('/views/products')
-})
+router.get('/githubcallback', passport.authenticate('github', {session:false, failureRedirect:'/views/faillogin'}), githubcallback)
 
-router.get('/logout', (req, res) => {
-    res.clearCookie("auth").redirect('/views/login')
-})
+router.get('/logout', logout)
 
-router.get('/current',  passport.authenticate('current', {session:false}), (req, res) => {
-    res.send(req.user.user)
-})
+router.get('/current',  passport.authenticate('current', {session:false}), current)
 
 export default router;

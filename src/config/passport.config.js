@@ -4,7 +4,8 @@ import GitHubStrategy from 'passport-github2';
 import jwt from "passport-jwt";
 import fetch from 'node-fetch';
 
-import usersModel from "../dao/db/models/users.models.js";
+
+import { UserService } from "../repositories/index.js";
 import { createHash, isValidPassword } from "../encrypt.js";
 import { generateToken } from "../jwt_utils.js";
 import config from "./config.js";
@@ -15,7 +16,7 @@ const LocalStrategy = local.Strategy;
 
 
 const cookieExtractor = req => {
-    const token = req?.cookies['auth'] || null;
+    const token = req?.cookies['auth'] || req?.headers?.auth || null;
     console.log('Cookie Extractor', token);
     return token;
 }
@@ -40,14 +41,12 @@ const initializePassport= () => {
     }, async (req, username, password, done)=>{
         
         const {first_name, last_name, email, age} = req.body;
-
-        
-            const user = await usersModel.findOne({email: username}).lean().exec();
+            const user = await UserService.get(username);
             if (user){
                 return done('Usuario ya existente en la base de datos', false)
             }
        
-            const newUser = await usersModel.create({
+            const userTemplate = {
                 first_name: first_name,
                 last_name: last_name,
                 email: email,
@@ -55,7 +54,8 @@ const initializePassport= () => {
                 age: age,
                 cart: await fetch('http://127.0.0.1:8080/api/carts', {method:'POST'}).then(res=>res.json()).then(data=> data._id)
 
-            })
+            }
+            const newUser = await UserService.create(userTemplate)
 
             return done(null, newUser)
 
@@ -66,8 +66,7 @@ const initializePassport= () => {
         usernameField: 'email',
     }, async (username, password, done)=>{
         try {
-
-            const user = await usersModel.findOne({email: username}).lean().exec();
+            const user = await UserService.get(username);
             if(!user){
                 console.log('NO USER: No hay usuario registrado con ese email');
                 return done(null, false)
@@ -96,21 +95,23 @@ const initializePassport= () => {
     },async(accessToken, refreshToken, profile, done)=>{
         console.log(profile);
         try {
-            const user = await usersModel.findOne({email:profile.emails[0].value})
+            const user = await UserService.get(profile.emails[0].value);
             if (user) {
                 const token = generateToken(user)
                 user.token = token
                 return done(null, user);
             }
 
-            const newUser = await usersModel.create({
+            const userTemplate = {
                 first_name:profile._json.name,
                 last_name:'',
                 email: profile.emails[0].value,
                 password: '',
                 age:'',
                 cart: await fetch('http://127.0.0.1:8080/api/carts', {method:'POST'}).then(res=>res.json()).then(data=> data._id)
-            })
+            }
+            const newUser = await UserService.create(userTemplate)
+
             const token = generateToken(newUser)
             newUser.token = token
             return done(null, newUser)
@@ -125,7 +126,7 @@ const initializePassport= () => {
     });
 
     passport.deserializeUser(async(id, done)=>{
-        const user = await usersModel.findById(id).lean().exec()
+        const user = await UserService.getbyId(id);
         done(null, user)
     })
 
