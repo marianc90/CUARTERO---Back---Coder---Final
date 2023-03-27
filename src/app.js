@@ -21,6 +21,8 @@ import { MessageService } from './repositories/index.js';
 
 import config from './config/config.js';
 
+import errorHandler from './middlewares/errors.js'
+
 const app = express();
 
 app.use(express.json())
@@ -85,11 +87,15 @@ mongoose.connect(config.MONGO_URI,{dbName: config.MONGO_DB_NAME}, async (error)=
             req.io = socketServer
             next()
         })
+       
         app.use('/api/products', productsRouter)
         app.use('/api/carts', cartsRouter)
         app.use('/api/chat', chatRouter)
         app.use('/session', sessionRouter)
         app.use('/views', viewsRouter)
+        
+        app.use(errorHandler)
+        
         
         app.get('/', (req, res) =>{
                 res.redirect('views/products')
