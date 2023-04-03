@@ -22,6 +22,7 @@ import { MessageService } from './repositories/index.js';
 import config from './config/config.js';
 
 import errorHandler from './middlewares/errors.js'
+import { addLogger } from './logger_utils.js';
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.set('view engine', 'handlebars')
 
 app.use(express.static(__dirname+'/public'))
 app.use(cookieParser('mySecret'));
+app.use(addLogger);
 
 mongoose.set({strictQuery: true})
 mongoose.connect(config.MONGO_URI,{dbName: config.MONGO_DB_NAME}, async (error)=>{
@@ -96,7 +98,14 @@ mongoose.connect(config.MONGO_URI,{dbName: config.MONGO_DB_NAME}, async (error)=
         
         app.use(errorHandler)
         
-        
+        app.get('/loggerTest', (req, res)=>{
+            req.logger.fatal("FATAL")
+            req.logger.error("ERROR")
+            req.logger.warning("WARNING")
+            req.logger.info("INFO")
+            req.logger.http("HTTP")
+            req.logger.debug("DEBUG")
+        })
         app.get('/', (req, res) =>{
                 res.redirect('views/products')
             }
