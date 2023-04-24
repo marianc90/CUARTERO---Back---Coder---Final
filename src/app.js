@@ -24,6 +24,9 @@ import config from './config/config.js';
 import errorHandler from './middlewares/errors.js'
 import { addLogger } from './logger_utils.js';
 
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUiExpress from 'swagger-ui-express';
+
 const app = express();
 
 app.use(express.json())
@@ -37,6 +40,20 @@ app.set('view engine', 'handlebars')
 app.use(express.static(__dirname+'/public'))
 app.use(cookieParser('mySecret'));
 app.use(addLogger);
+
+const swaggerOptions = {
+    definition:{
+        openapi: '3.0.1',
+        info:{
+            title: "Documentacion de e-Commerce",
+            description: "Este proyecto e-Commerce pertenece al trabajado integrador final del curso Backend"
+        }
+    },
+    apis: [`${__dirname}/docs/**/*.yaml`]
+}
+
+const specs = swaggerJSDoc(swaggerOptions)
+app.use('/apidocs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs))
 
 mongoose.set({strictQuery: true})
 mongoose.connect(config.MONGO_URI,{dbName: config.MONGO_DB_NAME}, async (error)=>{
