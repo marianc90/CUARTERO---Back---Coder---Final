@@ -4,7 +4,7 @@ import { faker } from "@faker-js/faker";
  
 
 const expect = chai.expect
-const requester = supertest('http://127.0.0.1:8080')
+const requester = supertest('https://cuartero-back-coder-final-production.up.railway.app/')
 
 let cookie
 let userId
