@@ -12,6 +12,19 @@ class UserRepository{
         return await this.dao.get(username)
     }
 
+    getAll = async () => {
+        const users = await this.dao.getAll()
+        const usersToSend = [];
+        for (let user of users) {
+            user = new UserDTO(user).getAll()
+            usersToSend.push(user)
+        }
+        return usersToSend
+    }
+    getAllFull = async () => {
+        return await this.dao.getAll()
+    }
+
     getOne = async (parameter) => {
         return await this.dao.getOne(parameter); 
     }
@@ -34,7 +47,29 @@ class UserRepository{
         return await this.dao.update(id,updatedUser)
     }   
     delete = async (id) => {
-        return await this.dao.deleteOne(id)        
+        return await this.dao.delete(id)        
+    }
+    deleteInactive = async () =>{
+        const users = await this.dao.getAll()
+        const usersToRemove = []
+        const hoy = new Date()
+        const html = `<h2>Debido al tiempo transcurrido, su usuario se ha eliminado</h2>`
+        for (let i = 0; i < users.length; i++) {
+            if (!users[i].last_connection){
+                    usersToRemove.push(users[i]._id)
+                    const result = this.mail.send(users[i], "Su usuario va a eliminarse", html)
+            }
+            if (users[i].last_connection) {
+                const tiempo_transcurrido = hoy.getTime() - users[i].last_connection.getTime()
+                const tiempo_transcurridoEnMinutos = Math.floor(tiempo_transcurrido / (1000 * 60));       
+                if (tiempo_transcurridoEnMinutos > 2880 && users[i].role != 'admin'){
+                    usersToRemove.push(users[i]._id)
+                    const result = this.mail.send(users[i], "Su usuario va a eliminarse", html)
+                }
+            }
+        }
+        const removing = await this.dao.deleteMany(usersToRemove)
+        return removing
     }
     reminder = async(email)=>{
         const user = await this.dao.getOne({email: email})
@@ -43,7 +78,7 @@ class UserRepository{
         }
         const token = generateToken(user)
         let html = `<h1> Recupere su contraseña: </h1>
-        <h2><a href="http://127.0.0.1:8080/session/recoverPass/${token}">Link de recuperación</a><h2>
+        <h2><a href="http://127.0.0.1:8080/api/users/recoverPass/${token}">Link de recuperación</a><h2>
         `
         
         //send email
