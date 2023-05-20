@@ -52,7 +52,7 @@ const initializePassport= () => {
                 email: email,
                 password: createHash(password),
                 age: age,
-                cart: await fetch('https://cuartero-back-coder-final-production.up.railway.app//api/carts', {method:'POST'}).then(res=>res.json()).then(data=> data._id),
+                cart: await fetch('https://cuartero-back-coder-final-production.up.railway.app/api/carts', {method:'POST'}).then(res=>res.json()).then(data=> data._id),
                 documents: [],
                 last_connection: new Date()
             }
@@ -90,7 +90,7 @@ const initializePassport= () => {
     passport.use('github', new GitHubStrategy({
         clientID: 'Iv1.256bc2c5bdcf7df0',
         clientSecret: '0ee3872aac520127d5f2d1d43b6e1cc5fdbf6506',
-        callbackURL: 'https://cuartero-back-coder-final-production.up.railway.app//api/users/githubcallback',
+        callbackURL: 'https://cuartero-back-coder-final-production.up.railway.app/api/users/githubcallback',
         scope:['user:email']
     },async(accessToken, refreshToken, profile, done)=>{
         console.log(profile);
@@ -110,7 +110,7 @@ const initializePassport= () => {
                 email: profile.emails[0].value,
                 password: '',
                 age:'',
-                cart: await fetch('https://cuartero-back-coder-final-production.up.railway.app//api/carts', {method:'POST'}).then(res=>res.json()).then(data=> data._id),
+                cart: await fetch('https://cuartero-back-coder-final-production.up.railway.app/api/carts', {method:'POST'}).then(res=>res.json()).then(data=> data._id),
                 documents: [],
                 last_connection: new Date()
             }
