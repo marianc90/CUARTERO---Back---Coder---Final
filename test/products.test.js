@@ -4,7 +4,7 @@ import { faker } from "@faker-js/faker";
  
 
 const expect = chai.expect
-const requester = supertest('https://cuartero-back-coder-final-production.up.railway.app')
+const requester = supertest('https://nodecommerce-74al.onrender.com')
 
 let cookie
 let userId
