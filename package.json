@@ -2,12 +2,12 @@
   "name": "desafioback",
   "version": "1.0.0",
   "description": "Desafio Backend Coderhouse",
-  "main": "app.js",
+  "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "mocha test/**/*.js",
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
   },
   "repository": {
     "type": "git",
